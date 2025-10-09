@@ -1,7 +1,7 @@
 import logging
 from .baseReader import BaseReader
 import pandas as pd
-from utils import setup_logger
+from flowpy.utils import setup_logger
 
 logfn = __name__+'.log'
 logger = setup_logger(__name__, logfn)

@@ -6,7 +6,7 @@ import json
 from anytree import AnyNode, Node, RenderTree
 from .AbstractBase import AbstractReader
 from anytree.importer import JsonImporter
-from utils import setup_logger
+from flowpy.utils import setup_logger
 #from anytreeStorage import AnytreeStorage, CustomNode, Entry
 
 logfn = __name__+'.log'

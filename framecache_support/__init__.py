@@ -12,5 +12,7 @@ from .excelWriter import ExcelWriter
 from .jsonWriter import JsonWriter
 from .yamlWriter import YamlWriter
 
+from .dbReader import DbReader
+
 #from yamlStorage import YamlStorage
 #from yamldirStorage import YamldirStorage

@@ -1,0 +1,9 @@
+### framecache_support requirements
+
+# pip 
+anytree
+pyyaml
+pandas
+sqlalchemy
+
+

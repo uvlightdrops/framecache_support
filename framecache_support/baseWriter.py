@@ -1,5 +1,5 @@
 from .AbstractBase import AbstractWriter
-from utils import setup_logger
+from flowpy.utils import setup_logger
 import logging
 logfn = __name__+'.log'
 logger = setup_logger(__name__, logfn, level=logging.DEBUG)

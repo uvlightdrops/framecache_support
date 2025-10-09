@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 # import csv
 import os
-from utils import setup_logger
-from config_loader import ConfigLoader
+from flowpy.utils import setup_logger
+#from config_loader import ConfigLoader
 from .baseWriter import BaseWriter
 import logging
 logfn = __name__+'.log'
@@ -11,7 +11,8 @@ logger = setup_logger(__name__, logfn, level=logging.DEBUG)
 DELIM_IN = ','
 fields_get_enums = []
 fn_file = {}
-class CsvWriter(BaseWriter, ConfigLoader):
+
+class CsvWriter(BaseWriter): #, ConfigLoader):
     def __init__(self):
         self.writer = {}
         self.buffer = {}

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import json
-from utils import setup_logger
-from config_loader import ConfigLoader
+from flowpy.utils import setup_logger
+#from config_loader import ConfigLoader
 from .baseWriter import BaseWriter
 import logging
 logfn = __name__+'.log'
@@ -9,7 +9,7 @@ logger = setup_logger(__name__, logfn, level=logging.DEBUG)
 
 fields_get_enums = []
 fn_file = {}
-class JsonWriter(BaseWriter, ConfigLoader):
+class JsonWriter(BaseWriter):  #, ConfigLoader):
     def __init__(self):
         self.writer = {}
         self.buffer = {}

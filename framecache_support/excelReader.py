@@ -1,14 +1,14 @@
 import logging
 import pandas as pd
-from utils import setup_logger
+from flowpy.utils import setup_logger
 from .baseReader import BaseReader
-from fileBase import FileBase
+#from fileBase import FileBase
 
 logfn = __name__+'.log'
 logger = setup_logger(__name__, logfn, level=logging.DEBUG)
 
 
-class ExcelReader(BaseReader, FileBase):
+class ExcelReader(BaseReader): #, FileBase):
     """ A class to read an Excel file """
     data = None
     fieldnames_dict = {}

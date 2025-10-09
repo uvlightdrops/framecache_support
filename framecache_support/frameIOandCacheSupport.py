@@ -6,7 +6,7 @@ try:
 except:
     pass
 from time import sleep
-from utils import setup_logger
+from flowpy.utils import setup_logger
 logger = setup_logger(__name__, __name__+'.log')
 lg = setup_logger(__name__+'_2', __name__+'_2.log')
 import pprint
@@ -20,18 +20,81 @@ class FrameIOandCacheSupport(DataBroker):
 
     def __init__(self):
         self.df_d = {}
+        self.reader_d = {}
         self.writer_d = {}
-        # self.reader_d = {}
+        self.reader_single_d = {}
+        self.writer_single_d = {}
         self.buffer_names_d = {}
         self.tkeys_d = {}
         self.frame_fields = {}
 
-        #print(sys.path)
+    def get_frame_group(self, tkey):
+        return self.df_d[tkey]
+
+    def store_frame_group(self, tkey, df_g):
+        self.df_d[tkey] = df_g
+        # XXX if this is used again we need to handle this, a list comprehension?
+        #self.buffer_names_d[tkey] = tkey
+        logger.debug('Stored frame_group %s', tkey)
+
+    def get_frame(self, tkey, group):
+        if group in self.df_d[tkey].keys():
+            logger.debug('get_frame tkey: %s, group: %s', tkey, group)
+            return self.df_d[tkey][group]
+        return None
+
+    def store_frame(self, tkey, group, df):
+        #logger.debug(df.head(3))
+        self.df_d[tkey][group] = df
+        self.buffer_names_d[tkey][group] = group
+
+
+    def init_framecache(self):
+        xlsx_groups = [
+            'xlsx_framedumps',
+            'xlsx_framedumps_groups',
+            'xlsx_framedumps_others',
+        ]
+        tkeys_d = {}
+        c = 0
+        for group in xlsx_groups:
+            tkeys = self.cfg_kp_frames[group]
+            #tkeys = self.cfg_kp_process_fields[group]
+            lg.debug('initializing for frameIO group: %s tkeys: %s  ', group, tkeys)
+            self.init_dfio_dicts(tkeys)
+
+            if not self.cfg_profile['reader'] is None:
+                self.init_r(tkeys)
+            if not self.cfg_profile['writer'] is None:
+                self.init_w(tkeys)
+            tkeys_d[c] = tkeys
+            c += 1
+        self.tkeys_d = tkeys_d
+
+    def init_fc(self):
+        self.init_framecache()
+
+    def init_fc_bytype(self):
+        groups = [
+            'reader_csv',
+            'reader_db'
+        ]
+        for group in groups:
+            rws, type = group.split('_')
+            tkeys = self.cfg_kp_frames[group]
+            logger.debug('initializing for frameIO group: %s tkeys: %s  ', group, tkeys)
+            for key in tkeys:
+                if rws == 'reader':
+                    self.reader_single_d[key] = self.init_reader_class_by_type(type)
+                elif rws == 'writer':
+                    self.writer_single_d[key] = self.init_writer_class_by_type(type)
 
     def init_dfio_dicts(self, tkeys):
+        """ Initialize dicts of dicts of dataframes, readers, writers, buffer names"""
         for tkey in tkeys:
-            logger.debug('init_dfio_dicts: tkey: %s', tkey)
+            #logger.debug('init_dfio_dicts: tkey: %s', tkey)
             self.df_d[tkey] = {}
+            self.reader_d[tkey] = {}
             self.writer_d[tkey] = {}
             self.buffer_names_d[tkey] = {}
 
@@ -39,7 +102,6 @@ class FrameIOandCacheSupport(DataBroker):
     def build_fieldlists(self, cfg):
         for key, value in cfg.items():
             if key.endswith('_table'):
-                # logger.debug('build_fieldlists for %s', key)
                 field_list = []
                 for e, val in cfg[key].items():
                     # logger.debug('e: %s, val: %s', e, val)
@@ -52,32 +114,47 @@ class FrameIOandCacheSupport(DataBroker):
                 #logger.debug('e: %s, field_list: %s', e, field_list)
                 self.__setattr__('fn_'+key, field_list) # deprecated XXX
                 self.frame_fields[key] = field_list # NEW
-        # lg.debug('self.fn* : %s', [attr for attr in dir(self) if attr.startswith('fn_')])
+        #logger.debug('self.fn* : %s', [attr for attr in dir(self) if attr.startswith('fn_')])
         # logger.debug(self.frame_fields['entries_raw_table'])
 
     def init_r(self, tkeys):
-        # XXX self.reader_d = {}  # we want this too
+        logger.debug('init_r for tkeys: %s', tkeys)
         self.reader = self.init_reader_class()
         self.reader.set_src_dir(self.cfg_si['data_in_sub'])
+        for tkey in tkeys:
+            self.reader_d[tkey] = None
 
     def init_w(self, tkeys):
         # legacy writer single object
         self.writer = self.init_writer_class()
-        # current array of writers
         for tkey in tkeys:
-            self.writer_d[tkey] = self.init_writer_class()
-            self.writer_d[tkey].set_name(tkey)
+            self.writer_d[tkey] = None
 
-    def close_excel(self):
-        try:
-            excel = win32com.client.GetObject(None, "Excel.Application")
-            # Close the Excel application
-            excel.Quit()
-            lg.info("Excel application closed successfully.")
-        except Exception as e:
-            pass
-            #lg.debug('Error: %s', e)
-        #sleep(1)
+    def get_reader_group(self, tkey):
+        if self.reader_d.get(tkey) is None:
+            reader = self.init_reader_class()
+            reader.set_name(tkey)
+            self.reader_d[tkey] = reader
+        return self.reader_d[tkey]
+
+    def get_writer_group(self, tkey):
+        if self.writer_d.get(tkey) is None:
+
+            writer = self.init_writer_class()
+            writer.set_name(tkey)
+            # DEV test here
+            writer.set_dst(self.cfg_si['data_out_sub'].joinpath(self.phase_subdir, '_'+tkey))
+            writer.init_writer_all()
+            self.writer_d[tkey] = writer
+        return self.writer_d[tkey]
+
+    def get_reader(self, tkey):
+        if self.reader_single_d[tkey] is None:
+            logger.debug('init single reader for tkey: %s was None in cache', tkey)
+            reader = self.init_reader_class()
+            reader.set_name(tkey)
+            self.reader_single_d[tkey] = reader
+        return self.reader_single_d[tkey]
 
     def prep_writer(self):
         # lg.debug('self.phase_subdir: %s', self.phase_subdir)
@@ -88,7 +165,7 @@ class FrameIOandCacheSupport(DataBroker):
         for tk_i, tk_item in self.tkeys_d.items():
             for tkey in tk_item:
                 # XXX os.remove here?
-                # lg.debug('prep writer for %s', tkey)
+                logger.debug('prep writer for %s', tkey)
                 outfiles = list(self.buffer_names_d[tkey].keys())
                 self.writer_d[tkey].set_outfiles(outfiles)
                 self.writer_d[tkey].set_dst(self.cfg_si['data_out_sub'].joinpath(self.phase_subdir, '_'+tkey))
@@ -98,6 +175,17 @@ class FrameIOandCacheSupport(DataBroker):
                 #    self.writer_d[tkey].set_buffer(name, self.df_d[tkey][name])
                 setattr(self.writer_d[tkey], 'cfg_si', self.cfg_si)
                 self.writer_d[tkey].init_writer_all()
+
+    def write_frame_group(self, tkey: str, df_d) -> None:
+        logger.debug('self.buffer_names_d[tkey]: %s', self.buffer_names_d[tkey])
+        self.get_writer_group(tkey)
+        self.writer_d[tkey].set_outfiles(list(self.buffer_names_d[tkey].keys()))
+        for bn_key, bn_item in self.buffer_names_d[tkey].items():
+            lg.debug('len buffer %s: %s', bn_key, len(df_d[bn_key]))
+            if (len(df_d[bn_key]) == 0):
+                lg.error('len(self.df_d[%s][%s]) == 0', tkey, bn_key)
+            self.writer_d[tkey].set_buffer(bn_key, df_d[bn_key])
+        self.writer_d[tkey].write()
 
     def generic_write_xlsx_group(self, xgroupnr: int) -> None:
         for tkey in self.tkeys_d[xgroupnr]:
@@ -129,18 +217,4 @@ class FrameIOandCacheSupport(DataBroker):
             # self.generic_write_xlsx_group(tk_i)
 
             """
-            for tkey in tk_item:
-                lg.info('=== write all for tkey: %s', tkey)
-                lg.debug(self.df_d[tkey].keys())
-                # logger.info('buffer_names_d[tkey].items: %s', self.buffer_names_d[tkey].items())
-                self.writer_d[tkey].set_outfiles(self.buffer_names_d[tkey].keys())
-                for bn_key, bn_item in self.buffer_names_d[tkey].items():
-                    # lg.debug('bn_key: %s', bn_key)
-                    if self.cfg_kp_logic_ctrl['drop_for_output'] and self.progress_table_output_drop_fields:
-                        self.df_d[tkey][bn_key].drop(columns=self.progress_table_output_drop_fields)
-                    # lg.debug('len buffer %s: %s', bn_key, len(self.df_d[tkey][bn_key]))
-                    if (len(self.df_d[tkey][bn_key]) == 0):
-                        lg.error('len(self.df_d[%s][%s]) == 0', tkey, bn_key)
-                    self.writer_d[tkey].set_buffer(bn_key, self.df_d[tkey][bn_key])
-                self.writer_d[tkey].write()
             """

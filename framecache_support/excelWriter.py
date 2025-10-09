@@ -2,14 +2,14 @@ import logging
 from email.policy import default
 
 import pandas as pd
-from utils import setup_logger, safe_fn
-from fileBase import FileBase
+from flowpy.utils import setup_logger, safe_fn
+#from fileBase import FileBase
 from .baseWriter import BaseWriter
 
 logger = setup_logger(__name__, __name__+'.log')
 
 
-class ExcelWriter(BaseWriter, FileBase):
+class ExcelWriter(BaseWriter): #, FileBase):
     """ handles a set of destination files, writes to excel"""
     writer = None
 
@@ -21,7 +21,7 @@ class ExcelWriter(BaseWriter, FileBase):
 
     def set_dst(self, dst):
         self.dst = dst.with_suffix('.xlsx')
-        logger.debug("setting dst for writer %s", self.name ) # self.dst)
+        #logger.debug("setting dst for writer %s", self.name ) # self.dst)
 
     def init_writer_all(self):
         # for Excel there is only one dest file
@@ -32,8 +32,8 @@ class ExcelWriter(BaseWriter, FileBase):
         default_height = 14
         for out_fn in self.out_fns:
             sheet_name = safe_fn(out_fn)
-            #logger.debug("len buffer[out_fn] : %s", len(self.buffer[out_fn]))
-            #logger.debug("cols buffer[out_fn] : %s", self.buffer[out_fn].columns)
+            logger.debug("len buffer[out_fn] : %s", len(self.buffer[out_fn]))
+            #logger.debug("buffer[out_fn] : %s", self.buffer[out_fn])
             #logger.debug("write excel sheet %s in file %s", sheet_name, self.dst)
             # logger.debug('buffer[%s].head() : %s', out_fn, self.buffer[out_fn].head())
             try:

@@ -1,14 +1,14 @@
 import logging
 import pandas as pd
-from utils import setup_logger, safe_fn
+from flowpy.utils import setup_logger, safe_fn
 from .baseWriter import BaseWriter
-from config_loader import ConfigLoader
+# from config_loader import ConfigLoader
 from sqlalchemy import create_engine, inspect
 
 logger = setup_logger(__name__, __name__+'.log')
 
 
-class DbWriter(BaseWriter, ConfigLoader):
+class DbWriter(BaseWriter) : #, ConfigLoader):
     """ handles a set of destination files, writes to excel"""
     writer = None
 

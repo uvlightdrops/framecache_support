@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import yaml
-from utils import setup_logger
-from config_loader import ConfigLoader
+from flowpy.utils import setup_logger
+# from config_loader import ConfigLoader
 import logging
 from .baseWriter import BaseWriter
 
@@ -10,7 +10,7 @@ logger = setup_logger(__name__, logfn, level=logging.DEBUG)
 
 fields_get_enums = []
 fn_file = {}
-class YamlWriter(BaseWriter, ConfigLoader):
+class YamlWriter(BaseWriter): #, ConfigLoader):
     def __init__(self):
         self.writer = {}
         self.buffer = {}

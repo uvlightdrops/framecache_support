@@ -1,7 +1,8 @@
-from yaml_config_support.YamlConfigSupport import YamlConfigSupport
-from utils import setup_logger
+from yaml_config_support import YamlConfigSupport
+from flowpy.utils import setup_logger
 logger = setup_logger(__name__, __name__+'.log')
 
+from .dbReader import DbReader
 from .csvReader import CsvReader
 from .excelReader import ExcelReader
 from .jsonReader import JsonReader
@@ -17,9 +18,6 @@ from .yamlWriter import YamlWriter
 #from SICache import SICache, MetadataSearch
 
 
-class APIbroker:
-    pass
-
 #class DataBroker(YamlConfigSupport):
 class DataBroker:
 
@@ -28,31 +26,29 @@ class DataBroker:
             class_name = class_name+'Reader'
         elif rw == 'w':
             class_name = class_name+'Writer'
-        elif rw == 's':
-            class_name = class_name+'Storage'
         else:
             pass
         # define mapping in config XXX
         classes = {
-            #'SICache': SICache,
-            #'MetadataSearch': MetadataSearch,
-            'excelReader': ExcelReader,
+            'dbReader': DbReader,
             'csvReader': CsvReader,
-            'excelWriter': ExcelWriter,
+            'excelReader': ExcelReader,
+            'jsonReader': JsonReader,
+            'yamlReader': YamlReader,
+            #'ansibleWriter': AnsibleWriter,
             'csvWriter': CsvWriter,
             'dbWriter': DbWriter,
-            #'ansibleWriter': AnsibleWriter,
-            'yamlReader': YamlReader,
-            'yamlWriter': YamlWriter,
-            #'yamlStorage': YamlStorage,
-            #'yamldirStorage': YamldirStorage,
-            'jsonReader': JsonReader,
+            'excelWriter': ExcelWriter,
             'jsonWriter': JsonWriter,
-            #'jsonStorage': JsonStorage,
-            #'firefox_bookmarksStorage': FirefoxBookmarksStorage,
-            #'kdbxStorage': KdbxStorage,
+            'yamlWriter': YamlWriter,
         }
         return classes[class_name]()
+
+
+    def init_reader_class_by_type(self, type):
+        return self.class_factory(type, 'r')
+    def init_writer_class_by_type(self, type):
+        return self.class_factory(type, 'w')
 
     # XXX combine both, usage check!
     # XXX add klass_cfg as param ? And use default from config as fallback
@@ -63,18 +59,6 @@ class DataBroker:
     def init_writer_class(self):
         klass_cfg = self.cfg_profile['writer']
         return self.class_factory(klass_cfg, 'w')
-
-    def init_storage_src_class(self):
-        klass_cfg = self.cfg_profile['storage_src']
-        klass_obj = self.class_factory(klass_cfg, 's')
-        klass_obj.src_or_dst = 'src'
-        return klass_obj
-
-    def init_storage_dst_class(self):
-        klass_cfg = self.cfg_profile['storage_dst']
-        klass_obj = self.class_factory(klass_cfg, 's')
-        klass_obj.src_or_dst = 'dst'
-        return klass_obj
 
 
 # dont make dependency to DataBroker

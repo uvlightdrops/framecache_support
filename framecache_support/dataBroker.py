@@ -1,4 +1,4 @@
-from yaml_config_support import YamlConfigSupport
+from yaml_config_support.yamlConfigSupport import YamlConfigSupport
 from flowpy.utils import setup_logger
 logger = setup_logger(__name__, __name__+'.log')
 

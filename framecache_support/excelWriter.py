@@ -1,9 +1,10 @@
 import logging
 from email.policy import default
+import warnings
+warnings.filterwarnings('ignore')
 
 import pandas as pd
 from flowpy.utils import setup_logger, safe_fn
-#from fileBase import FileBase
 from .baseWriter import BaseWriter
 
 logger = setup_logger(__name__, __name__+'.log')

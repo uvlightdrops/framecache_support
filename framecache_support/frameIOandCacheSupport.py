@@ -28,7 +28,27 @@ class FrameIOandCacheSupport(DataBroker):
         self.tkeys_d = {}
         self.frame_fields = {}
 
+    # Neue Methode: configure erlaubt das bequeme Setzen mehrerer cfg_* Dicts
+    def configure(self, **cfgs):
+        """Setze Konfig-Maps (z.B. cfg_kp_frames, cfg_profile, cfg_kp_process_fields).
+
+        Usage: fc.configure(cfg_kp_frames=..., cfg_profile=..., cfg_kp_si=...)
+        """
+        for k, v in cfgs.items():
+            # akzeptiere sowohl 'kp_frames' als auch 'cfg_kp_frames'
+            if not k.startswith('cfg_'):
+                setattr(self, 'cfg_' + k, v)
+            else:
+                setattr(self, k, v)
+        # backward compatibility: ensure cfg_si is set if only cfg_kp_si present
+        if not hasattr(self, 'cfg_si') and hasattr(self, 'cfg_kp_si'):
+            self.cfg_si = getattr(self, 'cfg_kp_si')
+
     def get_frame_group(self, tkey):
+        logger.debug('tkey: %s', tkey)
+        if tkey not in self.df_d.keys():
+            logger.error('No frame_group for tkey: %s', tkey)
+            return None
         return self.df_d[tkey]
 
     def store_frame_group(self, tkey, df_g):
@@ -38,12 +58,14 @@ class FrameIOandCacheSupport(DataBroker):
         logger.debug('Stored frame_group %s', tkey)
 
     def get_frame(self, tkey, group):
-        if group in self.df_d[tkey].keys():
-            logger.debug('get_frame tkey: %s, group: %s', tkey, group)
-            return self.df_d[tkey][group]
-        return None
+        logger.debug('get_frame tkey: %s, group: %s', tkey, group)
+        if group not in self.df_d[tkey].keys():
+            logger.error('No frame for tkey: %s, group: %s', tkey, group)
+            return None
+        return self.df_d[tkey][group]
 
     def store_frame(self, tkey, group, df):
+        logger.debug('store_frame tkey: %s, group: %s', tkey, group)
         #logger.debug(df.head(3))
         self.df_d[tkey][group] = df
         self.buffer_names_d[tkey][group] = group
@@ -60,7 +82,8 @@ class FrameIOandCacheSupport(DataBroker):
         for group in xlsx_groups:
             tkeys = self.cfg_kp_frames[group]
             #tkeys = self.cfg_kp_process_fields[group]
-            lg.debug('initializing for frameIO group: %s tkeys: %s  ', group, tkeys)
+            logger.debug('initializing for frameIO group: %s tkeys: %s  ', group, tkeys)
+
             self.init_dfio_dicts(tkeys)
 
             if not self.cfg_profile['reader'] is None:
@@ -118,7 +141,7 @@ class FrameIOandCacheSupport(DataBroker):
         # logger.debug(self.frame_fields['entries_raw_table'])
 
     def init_r(self, tkeys):
-        logger.debug('init_r for tkeys: %s', tkeys)
+        #logger.debug('init_r for tkeys: %s', tkeys)
         self.reader = self.init_reader_class()
         self.reader.set_src_dir(self.cfg_si['data_in_sub'])
         for tkey in tkeys:
@@ -157,7 +180,7 @@ class FrameIOandCacheSupport(DataBroker):
         return self.reader_single_d[tkey]
 
     def prep_writer(self):
-        # lg.debug('self.phase_subdir: %s', self.phase_subdir)
+        logger.debug('self.phase_subdir: %s', self.phase_subdir)
         p = self.cfg_si['data_out_sub'].joinpath(self.phase_subdir)
         if not p.exists():
             os.makedirs(self.cfg_si['data_out_sub'].joinpath(self.phase_subdir))
@@ -176,15 +199,19 @@ class FrameIOandCacheSupport(DataBroker):
                 setattr(self.writer_d[tkey], 'cfg_si', self.cfg_si)
                 self.writer_d[tkey].init_writer_all()
 
-    def write_frame_group(self, tkey: str, df_d) -> None:
+    # NEU
+    #def write_frame_group(self, tkey: str, df_d) -> None:
+    def write_frame_group(self, tkey: str): #, df_d) -> None:
+
         logger.debug('self.buffer_names_d[tkey]: %s', self.buffer_names_d[tkey])
         self.get_writer_group(tkey)
         self.writer_d[tkey].set_outfiles(list(self.buffer_names_d[tkey].keys()))
         for bn_key, bn_item in self.buffer_names_d[tkey].items():
-            lg.debug('len buffer %s: %s', bn_key, len(df_d[bn_key]))
-            if (len(df_d[bn_key]) == 0):
+            logger.debug('len buffer %s: %s', bn_key, len(self.df_d[tkey][bn_key]))
+            if (len(self.df_d[tkey][bn_key]) == 0):
                 lg.error('len(self.df_d[%s][%s]) == 0', tkey, bn_key)
-            self.writer_d[tkey].set_buffer(bn_key, df_d[bn_key])
+            self.writer_d[tkey].set_buffer(bn_key, self.df_d[tkey][bn_key])
+            #self.writer_d[tkey].set_buffer(bn_key, df_d[bn_key])
         self.writer_d[tkey].write()
 
     def generic_write_xlsx_group(self, xgroupnr: int) -> None:

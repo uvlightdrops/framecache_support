@@ -47,21 +47,24 @@ class FrameIOandCacheSupport(DataBroker):
     def get_frame_group(self, tkey):
         logger.debug('tkey: %s', tkey)
         if tkey not in self.df_d.keys():
-            logger.error('No frame_group for tkey: %s', tkey)
+            logger.error('50 No frame_group for tkey: %s', tkey)
             return None
         return self.df_d[tkey]
 
     def store_frame_group(self, tkey, df_g):
         self.df_d[tkey] = df_g
         # XXX if this is used again we need to handle this, a list comprehension?
+        for key in df_g.keys():
+            self.buffer_names_d[tkey][key] = key
         #self.buffer_names_d[tkey] = tkey
-        logger.debug('Stored frame_group %s', tkey)
+        logger.debug('60 Stored frame_group %s', tkey)
 
     def get_frame(self, tkey, group):
         logger.debug('get_frame tkey: %s, group: %s', tkey, group)
+        logger.debug(self.df_d[tkey].keys())
         if group not in self.df_d[tkey].keys():
             logger.error('No frame for tkey: %s, group: %s', tkey, group)
-            return None
+        return None
         return self.df_d[tkey][group]
 
     def store_frame(self, tkey, group, df):
@@ -202,10 +205,12 @@ class FrameIOandCacheSupport(DataBroker):
     # NEU
     #def write_frame_group(self, tkey: str, df_d) -> None:
     def write_frame_group(self, tkey: str): #, df_d) -> None:
-
-        logger.debug('self.buffer_names_d[tkey]: %s', self.buffer_names_d[tkey])
+        logger.debug('self.buffer_names_d[tkey]: %s - tkey is %s', self.buffer_names_d[tkey], tkey)
         self.get_writer_group(tkey)
-        self.writer_d[tkey].set_outfiles(list(self.buffer_names_d[tkey].keys()))
+        outnames = list(self.buffer_names_d[tkey].keys())
+        logger.debug('outnames: %s', outnames)
+        self.writer_d[tkey].set_outfiles(outnames)
+
         for bn_key, bn_item in self.buffer_names_d[tkey].items():
             logger.debug('len buffer %s: %s', bn_key, len(self.df_d[tkey][bn_key]))
             if (len(self.df_d[tkey][bn_key]) == 0):

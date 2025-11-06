@@ -64,7 +64,7 @@ class FrameIOandCacheSupport(DataBroker):
         logger.debug(self.df_d[tkey].keys())
         if group not in self.df_d[tkey].keys():
             logger.error('No frame for tkey: %s, group: %s', tkey, group)
-        return None
+            return None
         return self.df_d[tkey][group]
 
     def store_frame(self, tkey, group, df):

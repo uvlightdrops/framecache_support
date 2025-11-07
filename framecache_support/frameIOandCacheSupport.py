@@ -81,7 +81,9 @@ class FrameIOandCacheSupport(DataBroker):
             'xlsx_framedumps_others',
         ]
         tkeys_d = {}
+        self.tkeys_all = []
         c = 0
+
         for group in xlsx_groups:
             tkeys = self.cfg_kp_frames[group]
             #tkeys = self.cfg_kp_process_fields[group]
@@ -94,6 +96,7 @@ class FrameIOandCacheSupport(DataBroker):
             if not self.cfg_profile['writer'] is None:
                 self.init_w(tkeys)
             tkeys_d[c] = tkeys
+            self.tkeys_all += tkeys
             c += 1
         self.tkeys_d = tkeys_d
 
@@ -181,6 +184,14 @@ class FrameIOandCacheSupport(DataBroker):
             reader.set_name(tkey)
             self.reader_single_d[tkey] = reader
         return self.reader_single_d[tkey]
+
+    def get_writer(self, tkey):
+        if self.writer_single_d.get(tkey, None) is None:
+            logger.debug('init single writer or tkey: %s was None in cache', tkey)
+            writer = self.init_writer_class()
+            writer.set_name(tkey)
+            self.writer_single_d[tkey] = writer
+        return self.writer_single_d[tkey]
 
     def prep_writer(self):
         logger.debug('self.phase_subdir: %s', self.phase_subdir)

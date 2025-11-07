@@ -22,7 +22,7 @@ class ExcelWriter(BaseWriter): #, FileBase):
 
     def set_dst(self, dst):
         self.dst = dst.with_suffix('.xlsx')
-        #logger.debug("setting dst for writer %s", self.name ) # self.dst)
+        logger.debug("setting dst %s for writer %s", self.name, self.dst)
 
     def init_writer_all(self):
         # for Excel there is only one dest file

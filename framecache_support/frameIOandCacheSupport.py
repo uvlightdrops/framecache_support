@@ -78,13 +78,12 @@ class FrameIOandCacheSupport(DataBroker):
         xlsx_groups = [
             'xlsx_framedumps',
             'xlsx_framedumps_groups',
-            'xlsx_framedumps_others',
         ]
         tkeys_d = {}
         self.tkeys_all = []
         c = 0
 
-        for group in xlsx_groups:
+        for group in self.cfg_kp_frames['supergroups']:
             tkeys = self.cfg_kp_frames[group]
             #tkeys = self.cfg_kp_process_fields[group]
             logger.debug('initializing for frameIO group: %s tkeys: %s  ', group, tkeys)

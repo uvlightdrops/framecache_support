@@ -5,7 +5,7 @@ class AbstractReader(ABC):
     in_SI = None
 
     @abstractmethod
-    def read(self, fn):
+    def read(self, fn=None):
         pass
 
     @abstractmethod

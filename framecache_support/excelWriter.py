@@ -1,5 +1,3 @@
-import logging
-from email.policy import default
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -69,21 +67,3 @@ class ExcelWriter(BaseWriter): #, FileBase):
 
         self.writer.close()
         #self.writer.save()
-
-    """
-    def write_orig(self):
-        with pd.ExcelWriter(dstfn, engine='xlsxwriter') as writer:
-            for out_fn in self.cfg_si['out_fns']:
-                logger.info("write excel sheet %s", sheet_name)
-                c = 0
-                sheet_name = out_fn
-                self.buffer[c].to_excel(writer, sheet_name=sheet_name, index=False)
-                # logger.debug("wrote fields to %s : %s", sheet_name, self.fnames[c])
-                for column in self.buffer[c]:
-                    column_length = max(self.buffer[c][column].astype(str).map(len).max(), len(column))
-                    logger.debug("max is %s", column_length)
-                    col_idx = self.buffer[c].columns.get_loc(column)
-                    writer.sheets[sheet_name].set_column(col_idx, col_idx, column_length)
-                c += 1
-            writer.save()
-    """

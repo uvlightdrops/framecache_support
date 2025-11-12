@@ -1,12 +1,14 @@
 from importlib.resources import as_file
 
 import polars as pl
+import pandas as pd
 from .baseReader import BaseReader
+from .sqlTableMixin import SQLTableMixin
 from flowpy.utils import setup_logger
 logger = setup_logger(__name__, __name__+'.log')
 
 
-class DbReader(BaseReader):
+class DbReader(BaseReader, SQLTableMixin):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.conn = None
@@ -17,34 +19,32 @@ class DbReader(BaseReader):
     def set_src_dir(self, src_dir):
         self.src_dir = src_dir
 
+    def set_outfiles(self, outfns): # XXX
+        self.outfns = outfns
+        logger.debug('set_outfiles: %s', self.outfns)
+        self.fn = outfns[0]  # default to first
+
     def get_fieldnames(self, fn):
         pass
 
     def read_all(self):
-        for fn in self.src_dir.joinpath(fn+'.csv'):
+        for fn in self.outfns:  # or infs ?
             self.read(fn)
 
-    def read(self, fn):
+    def read(self, fn=None):
+        if fn is None:
+            fn = self.fn
         fpath = self.src_dir.joinpath(fn)
-        if self.df is None:
-            self.df = pl.read_csv(fpath)
-            logger.debug('read into dbReader df')
-        #self.read_sql()
 
-    # XXX all methods not finished
+        if self.df is None:
+            polars_df = pl.read_csv(fpath)
+            self.df = polars_df.to_pandas()
+            logger.debug('%s read into dbReader df (pandas)', self.fn)
+
+    # SQL-Query jetzt über Mixin
     def read_sql(self, key, value):
-        fn = 'hosts.csv'
-        self.read(fn)
-        #logger.debug('read_sql, df shape: %s', df.shape)
-        # SQL-Abfrage
-        #sql = "SELECT * FROM df WHERE {key}='{value}'", %(key, value)
-        sql = "SELECT * FROM df WHERE {}='{}'".format(key, value)
-        logger.debug(sql)
-        args = {'df': self.df}
-        ctx = pl.SQLContext(args) #, eager=True)
-        tmp = ctx.execute(sql)
-        poldf = tmp.collect()
-        #logger.debug('poldf %s --- %s', type(poldf), poldf)
-        self.result = poldf.to_dict(as_series=False)
-        #logger.debug('result : %s', self.result)
+        self.read(self.fn)
+        query = f"SELECT * FROM df WHERE {key}='{value}'"
+        result_df = super().read_sql(query, self.df)
+        self.result = result_df.to_dict(orient='records')
         return self.result

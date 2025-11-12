@@ -8,4 +8,3 @@ class BaseReader(AbstractReader):
         return self.buffer[fn]
     def set_src_dir(self, src_dir: Path) -> None:
         self.src_dir = src_dir
-

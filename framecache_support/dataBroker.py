@@ -52,12 +52,16 @@ class DataBroker:
 
     # XXX combine both, usage check!
     # XXX add klass_cfg as param ? And use default from config as fallback
-    def init_reader_class(self):
+    def init_reader_class(self, *args, **kwargs):
         klass_cfg = self.cfg_profile['reader']
+        if 'reader_type' in kwargs:
+            klass_cfg = kwargs['reader_type']
         return self.class_factory(klass_cfg, 'r')
 
-    def init_writer_class(self):
+    def init_writer_class(self, *args, **kwargs):
         klass_cfg = self.cfg_profile['writer']
+        if 'writer_type' in kwargs:
+            klass_cfg = kwargs['writer_type']
         return self.class_factory(klass_cfg, 'w')
 
 

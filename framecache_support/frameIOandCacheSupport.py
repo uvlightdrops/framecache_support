@@ -34,6 +34,7 @@ class FrameIOandCacheSupport(DataBroker):
 
         Usage: fc.configure(cfg_kp_frames=..., cfg_profile=..., cfg_kp_si=...)
         """
+        # XXX make my own
         for k, v in cfgs.items():
             # akzeptiere sowohl 'kp_frames' als auch 'cfg_kp_frames'
             if not k.startswith('cfg_'):
@@ -176,18 +177,18 @@ class FrameIOandCacheSupport(DataBroker):
             self.writer_d[tkey] = writer
         return self.writer_d[tkey]
 
-    def get_reader(self, tkey):
+    def get_reader(self, tkey, *args, **kwargs):
         if self.reader_single_d[tkey] is None:
             logger.debug('init single reader for tkey: %s was None in cache', tkey)
-            reader = self.init_reader_class()
+            reader = self.init_reader_class(*args, **kwargs)
             reader.set_name(tkey)
             self.reader_single_d[tkey] = reader
         return self.reader_single_d[tkey]
 
-    def get_writer(self, tkey):
+    def get_writer(self, tkey, *args, **kwargs):
         if self.writer_single_d.get(tkey, None) is None:
             logger.debug('init single writer or tkey: %s was None in cache', tkey)
-            writer = self.init_writer_class()
+            writer = self.init_writer_class(*args, **kwargs)
             writer.set_name(tkey)
             self.writer_single_d[tkey] = writer
         return self.writer_single_d[tkey]

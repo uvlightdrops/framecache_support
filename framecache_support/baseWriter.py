@@ -14,11 +14,7 @@ class BaseWriter(AbstractWriter):
         self.name = name
 
     def set_dst(self, dst: Path):
-        if self.__class__.__name__ == 'CsvWriter':
-            basename = dst.split('.')[0] # XXX improve
-            self.set_dst_dir(basename)
-        else:
-            self.set_dst_fn(dst)
+        self.set_dst_fn(dst)
 
     def set_outfiles(self, out_fns):
         self.out_fns = out_fns

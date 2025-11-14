@@ -7,7 +7,7 @@ logger = setup_logger(__name__, logfn)
 
 
 class CsvWriter(BaseWriter): #, ConfigLoader):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.writer = {}
         self.buffer = {}
         self.fn_out_f = {}
@@ -42,4 +42,3 @@ class CsvWriter(BaseWriter): #, ConfigLoader):
             # logger.debug('self.buffer[fn]: %s', self.buffer[fn][:1])
             self.buffer[fn].to_csv(self.dst_dir.joinpath(fn).with_suffix('.csv'), index=False)
             c += 1
-

@@ -106,7 +106,8 @@ class FrameIOandCacheSupport(DataBroker):
     def init_fc_bytype(self):
         groups = [
             'reader_csv',
-            'reader_db'
+            'reader_db',
+            'reader_excel',
         ]
         for group in groups:
             rws, type = group.split('_')
@@ -159,17 +160,17 @@ class FrameIOandCacheSupport(DataBroker):
         for tkey in tkeys:
             self.writer_d[tkey] = None
 
-    def get_reader_group(self, tkey):
+    def get_reader_group(self, tkey, *args, **kwargs):
         if self.reader_d.get(tkey) is None:
-            reader = self.init_reader_class()
+            reader = self.init_reader_class(*args, **kwargs)
             reader.set_name(tkey)
             self.reader_d[tkey] = reader
         return self.reader_d[tkey]
 
-    def get_writer_group(self, tkey):
+    def get_writer_group(self, tkey, *args, **kwargs):
         if self.writer_d.get(tkey) is None:
-
-            writer = self.init_writer_class()
+            writer = self.init_writer_class(*args, **kwargs)
+            #logger.debug('writer init success?: %s', writer)
             writer.set_name(tkey)
             # DEV test here
             writer.set_dst(self.cfg_si['data_out_sub'].joinpath(self.phase_subdir, '_'+tkey))

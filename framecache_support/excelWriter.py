@@ -13,7 +13,7 @@ class ExcelWriter(BaseWriter): #, FileBase):
     writer = None
 
     # XXX wording: file location is not out_fn.
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         #self.writer = {}  # XXX where is this from??
         self.buffer = {}
         self.out_fns = []

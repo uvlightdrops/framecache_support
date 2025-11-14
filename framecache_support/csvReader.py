@@ -14,9 +14,9 @@ class CsvReader(BaseReader, SQLTableMixin):
     cfg_si = {}
     reader = {}
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
         self.buffer = {}
+        self.cfg_si = kwargs.get('cfg_si', {})
         self.df = None  # Main DataFrame for SQL operations
 
     def init_reader(self):

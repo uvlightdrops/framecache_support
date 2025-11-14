@@ -21,13 +21,14 @@ from .yamlWriter import YamlWriter
 #class DataBroker(YamlConfigSupport):
 class DataBroker:
 
-    def class_factory(self, class_name, rw):
+    def class_factory(self, class_name, *args, **kwargs):
+        rw = kwargs.get('rw', None)
         if rw == 'r':
             class_name = class_name+'Reader'
         elif rw == 'w':
             class_name = class_name+'Writer'
         else:
-            pass
+            return None
         # define mapping in config XXX
         classes = {
             'dbReader': DbReader,
@@ -42,7 +43,7 @@ class DataBroker:
             'jsonWriter': JsonWriter,
             'yamlWriter': YamlWriter,
         }
-        return classes[class_name]()
+        return classes[class_name](*args, **kwargs)
 
 
     def init_reader_class_by_type(self, type):
@@ -53,16 +54,17 @@ class DataBroker:
     # XXX combine both, usage check!
     # XXX add klass_cfg as param ? And use default from config as fallback
     def init_reader_class(self, *args, **kwargs):
+        logger.debug("init_reader_class kwargs: %s", kwargs)
         klass_cfg = self.cfg_profile['reader']
         if 'reader_type' in kwargs:
             klass_cfg = kwargs['reader_type']
-        return self.class_factory(klass_cfg, 'r')
+        return self.class_factory(klass_cfg, *args, rw='r', **kwargs)
 
     def init_writer_class(self, *args, **kwargs):
         klass_cfg = self.cfg_profile['writer']
         if 'writer_type' in kwargs:
             klass_cfg = kwargs['writer_type']
-        return self.class_factory(klass_cfg, 'w')
+        return self.class_factory(klass_cfg, *args, rw='w', **kwargs)
 
 
 # dont make dependency to DataBroker

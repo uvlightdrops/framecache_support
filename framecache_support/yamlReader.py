@@ -6,11 +6,13 @@ from flowpy.utils import setup_logger
 logfn = __name__+'.log'
 logger = setup_logger(__name__, logfn)
 
-
 class YamlReader(BaseReader):
     """ access a set of files as input """
     cfg_si = {}
     reader = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
     def init_reader(self):
         logger.debug('opening file %s', self.fn_in)
@@ -30,5 +32,3 @@ class YamlReader(BaseReader):
     def read_all(self):
         for fn in self.cfg_si['out_fns']:
             self.read(fn)
-
-

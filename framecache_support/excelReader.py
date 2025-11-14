@@ -2,7 +2,6 @@ import logging
 import pandas as pd
 from flowpy.utils import setup_logger
 from .baseReader import BaseReader
-#from fileBase import FileBase
 
 logfn = __name__+'.log'
 logger = setup_logger(__name__, logfn, level=logging.DEBUG)
@@ -13,12 +12,14 @@ class ExcelReader(BaseReader): #, FileBase):
     data = None
     fieldnames_dict = {}
     sheet_names = []
-    cfg_si = {}
     sub = ''
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        logger.debug('kwargs: %s', kwargs)
+        self.cfg_si = kwargs.get('cfg_si', {})
         self.buffer = {}
-        self.cfg_si = {}
+        self.fn = ''
 
     def get_all_sheet_fieldnames(self):
         self.fn = self.cfg_si['in_fns'][0]
@@ -38,7 +39,7 @@ class ExcelReader(BaseReader): #, FileBase):
 
     def init_reader(self):
         logger.debug('self.src_dir: %s', self.src_dir)
-        self.in_SI = str(self.src_dir.joinpath(self.cfg_si['in_SI']))
+        self.in_SI = str(self.src_dir.joinpath(self.fn))
 
     def read_first(self):
         #logger.debug('self.cfg_si: %s', self.cfg_si)

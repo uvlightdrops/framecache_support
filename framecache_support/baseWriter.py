@@ -7,6 +7,9 @@ from pathlib import Path
 
 
 class BaseWriter(AbstractWriter):
+    def __init__(self, *args, **kwargs):
+        pass
+
     def set_buffer(self, fn, buffer):
         self.buffer[fn] = buffer
 
@@ -24,4 +27,3 @@ class BaseWriter(AbstractWriter):
 
     def writerow(self, row):
         pass
-

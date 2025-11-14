@@ -18,6 +18,10 @@ class JsonReader(AbstractReader):
     cfg_si = {}
     reader = {}
 
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.buffer = {}
+
     def init_reader(self):
         logger.debug('opening file %s', self.fn_in)
         pass
@@ -39,6 +43,3 @@ class JsonReader(AbstractReader):
 
     def get_buffer(self, fn):
         return self.buffer[fn]
-
-
-

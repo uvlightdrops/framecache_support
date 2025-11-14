@@ -10,7 +10,7 @@ logger = setup_logger(__name__, logfn, level=logging.DEBUG)
 fields_get_enums = []
 fn_file = {}
 class JsonWriter(BaseWriter):  #, ConfigLoader):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.writer = {}
         self.buffer = {}
         self.fn_out_f = {}

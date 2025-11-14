@@ -40,7 +40,7 @@ class DbReader(BaseReader, SQLTableMixin):
             polars_df = pl.read_csv(fpath)
             self.df = polars_df.to_pandas()
             logger.debug('%s read into dbReader df (pandas)', self.fn)
-
+    """
     # SQL-Query jetzt über Mixin
     def read_sql(self, key, value):
         self.read(self.fn)
@@ -48,3 +48,4 @@ class DbReader(BaseReader, SQLTableMixin):
         result_df = super().read_sql(query, self.df)
         self.result = result_df.to_dict(orient='records')
         return self.result
+    """

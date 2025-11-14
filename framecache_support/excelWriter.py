@@ -45,7 +45,7 @@ class ExcelWriter(BaseWriter): #, FileBase):
                 logger.error("buffer is empty for %s", out_fn)
                 continue
             # logger.debug('len(buffer[%s]) : %s', out_fn, len(self.buffer[out_fn]))
-            # logger.debug(self.buffer[out_fn]['title_old'].head())
+            logger.debug(self.buffer[out_fn].head())
             for column in self.buffer[out_fn]:
                 if column == 'title_old':
                     column_length = 30

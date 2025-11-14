@@ -32,7 +32,7 @@ class CsvReader(BaseReader, SQLTableMixin):
         return self.fieldnames
 
     def read(self, fn):
-        file_path = self.src_dir.joinpath(fn+'.csv')
+        file_path = self.src_dir.joinpath(fn).with_suffix('.csv')
         self.buffer[fn] = pd.read_csv(file_path)
         self.df = self.buffer[fn]  # Set main DataFrame for SQL operations
 

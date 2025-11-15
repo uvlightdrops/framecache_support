@@ -22,6 +22,7 @@ class FrameIOandCacheSupport(DataBroker):
         self.df_d = {}
         self.reader_d = {}
         self.writer_d = {}
+        self.df_single_d = {}
         self.reader_single_d = {}
         self.writer_single_d = {}
         self.buffer_names_d = {}
@@ -62,7 +63,7 @@ class FrameIOandCacheSupport(DataBroker):
 
     def get_frame(self, tkey, group):
         logger.debug('get_frame tkey: %s, group: %s', tkey, group)
-        logger.debug(self.df_d[tkey].keys())
+        #logger.debug(self.df_d[tkey].keys())
         if group not in self.df_d[tkey].keys():
             logger.error('No frame for tkey: %s, group: %s', tkey, group)
             return None
@@ -74,6 +75,17 @@ class FrameIOandCacheSupport(DataBroker):
         self.df_d[tkey][group] = df
         self.buffer_names_d[tkey][group] = group
 
+    def store_frame_single(self, tkey, df):
+        logger.debug('store_frame_single tkey: %s', tkey)
+        #logger.debug(df.head(3))
+        self.df_single_d[tkey] = df
+
+    def get_frame_single(self, tkey):
+        logger.debug('get_frame_single tkey: %s', tkey)
+        if tkey not in self.df_single_d.keys():
+            logger.error('No single frame for tkey: %s', tkey)
+            return None
+        return self.df_single_d[tkey]
 
     def init_framecache(self):
         xlsx_groups = [
@@ -184,6 +196,7 @@ class FrameIOandCacheSupport(DataBroker):
             reader = self.init_reader_class(*args, **kwargs)
             reader.set_name(tkey)
             self.reader_single_d[tkey] = reader
+        logger.debug('got reader from FC cache for tkey: %s', tkey)
         return self.reader_single_d[tkey]
 
     def get_writer(self, tkey, *args, **kwargs):
@@ -192,6 +205,7 @@ class FrameIOandCacheSupport(DataBroker):
             writer = self.init_writer_class(*args, **kwargs)
             writer.set_name(tkey)
             self.writer_single_d[tkey] = writer
+        logger.debug('got writer from FC cache for tkey: %s', tkey)
         return self.writer_single_d[tkey]
 
     def prep_writer(self):

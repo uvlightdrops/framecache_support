@@ -1,5 +1,9 @@
 import polars as pl
 
+from flowpy.utils import setup_logger
+logger = setup_logger(__name__, __name__ + '.log')
+
+
 class SQLTableMixin:
     def read_sql(self, query: str, df=None):
         """
@@ -14,7 +18,11 @@ class SQLTableMixin:
         # Polars SQLContext benötigt polars df
         polars_df = pl.from_pandas(df)
         args = {'df': polars_df}
+
         ctx = pl.SQLContext(args)
         tmp = ctx.execute(query)
+        logger.debug('SQL query executed: %s', query)
+        logger.debug('tmp: %s', tmp)
+
         poldf = tmp.collect()
         return poldf.to_pandas()

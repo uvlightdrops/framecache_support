@@ -241,7 +241,10 @@ class FrameIOandCacheSupport(DataBroker):
             logger.debug('len buffer %s: %s', bn_key, len(self.df_d[tkey][bn_key]))
             if (len(self.df_d[tkey][bn_key]) == 0):
                 lg.error('len(self.df_d[%s][%s]) == 0', tkey, bn_key)
-            self.writer_d[tkey].set_buffer(bn_key, self.df_d[tkey][bn_key])
+            # we want to drop some fields before output, here just one list for all?
+            col_drop = self.frame_fields['drop_for_fcwrite_table']
+            df_out = self.df_d[tkey][bn_key].copy().drop(columns=col_drop, errors='ignore')
+            self.writer_d[tkey].set_buffer(bn_key, df_out)
             #self.writer_d[tkey].set_buffer(bn_key, df_d[bn_key])
         self.writer_d[tkey].write()
 

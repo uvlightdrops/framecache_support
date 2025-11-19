@@ -17,11 +17,11 @@ class CsvReader(BaseReader, SQLTableMixin):
     def __init__(self, *args, **kwargs):
         self.buffer = {}
         self.cfg_si = kwargs.get('cfg_si', {})
+        logger.debug(self.cfg_si.keys())
         self.df = None  # Main DataFrame for SQL operations
 
     def init_reader(self):
-        logger.debug(self.cfg_si.keys())
-        logger.debug('opening file %s', self.cfg_si['in_fns'])
+        pass
 
 
     def get_fieldnames(self, fn=None):
@@ -33,7 +33,9 @@ class CsvReader(BaseReader, SQLTableMixin):
 
     def read(self, fn):
         file_path = self.src_dir.joinpath(fn).with_suffix('.csv')
+        #logger.debug('Reading CSV file: %s', file_path)
         self.buffer[fn] = pd.read_csv(file_path)
+        #logger.debug(self.buffer[fn].tail(10))
         self.df = self.buffer[fn]  # Set main DataFrame for SQL operations
 
     def read_all(self):
